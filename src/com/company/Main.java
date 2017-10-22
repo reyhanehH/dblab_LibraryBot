@@ -3,6 +3,7 @@ package com.company;
 import com.company.botTest;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
+import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.exceptions.TelegramApiRequestException;
 
 public class Main {
@@ -16,11 +17,12 @@ public class Main {
 	*/
         ApiContextInitializer.init();
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
-        botTest bot = new botTest();
+        //botTest bot = new botTest();
+        stateLike stateLike = new stateLike();
 
         try
         {
-            telegramBotsApi.registerBot(bot);
+            telegramBotsApi.registerBot(stateLike);
         }
         catch (TelegramApiRequestException e)
         {
