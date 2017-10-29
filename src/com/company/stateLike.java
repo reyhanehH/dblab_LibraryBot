@@ -5,6 +5,7 @@ import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.*;
+import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 public class stateLike extends TelegramLongPollingBot
 {
@@ -23,11 +24,10 @@ public class stateLike extends TelegramLongPollingBot
             dbHelper.newState(chatId);
         }
         System.out.println("first ");
-        replyMessage (state ,chatId ,message);
+        replyMessage (state ,chatId ,message ,update);
     }
 
 
-    void replyMessage(int state, Long chatId, String message)
     {
         DBHelper dbHelper = new DBHelper();
         //welcome <- 1
@@ -35,16 +35,29 @@ public class stateLike extends TelegramLongPollingBot
         System.out.println("in reply method");
         switch (state)
         {
-            case '1': //welcome
+            case 1: //welcome
             {
                 //welcome message
-                SendMessage sendMessage = new SendMessage().setChatId(chatId);
+                //SendMessage sendMessage = new SendMessage().setChatId(chatId);
+                SendMessage sendMessage = new SendMessage().setChatId(update.getMessage().getChatId());
                 sendMessage.setText("به بات کتابخانه خوش آمدید \n برای دیدن امکانات این بات کلید امکانات را فشار دهید.");
                 System.out.println("before show button");
-                //show button
                 KeyboardButton[] buttons = new KeyboardButton[1];
                 buttons[0] = new KeyboardButton();
                 buttons[0].setText("امکانات");
+
+                try {
+                    sendMessage(sendMessage);
+                    
+                }catch (TelegramApiException e){
+                    e.printStackTrace();
+                }
+
+                //show button
+
+
+
+
                 //buttons[1] = new KeyboardButton();
                 //buttons[1].setText("انصراف");
                 System.out.println("before update");
@@ -53,7 +66,9 @@ public class stateLike extends TelegramLongPollingBot
                 System.out.println("after update");
                 break;
             }
-            case '2': //show emkanat
+            case 2: //show emkanat
+                break;
+                default: break; // if not found state
         }
     }
 
