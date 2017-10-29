@@ -15,17 +15,20 @@ public class Main {
         dbConnection connection = new dbConnection();
         connection.addMessadge("سلام");
 	*/
+        //DBHelper dbHelper = new DBHelper();
         ApiContextInitializer.init();
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
         //botTest bot = new botTest();
-        stateLike stateLike = new stateLike();
+        stateLike statelike = new stateLike();
 
         try
         {
-            telegramBotsApi.registerBot(stateLike);
+            telegramBotsApi.registerBot(statelike);
+            //telegramBotsApi.registerBot(bot);
         }
         catch (TelegramApiRequestException e)
         {
+            System.out.println("error");
             e.printStackTrace();
         }
     }
