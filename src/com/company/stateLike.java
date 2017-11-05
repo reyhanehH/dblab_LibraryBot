@@ -29,10 +29,14 @@ public class stateLike extends TelegramLongPollingBot
         //check the input:
         int state = dbHelper.checkId(chatId);
 
-
-        if (message == "/start" | state == -1) {
+        if (state == -1)
+        {
             dbHelper.newState(chatId);
             state = 1;
+        }
+
+        if (message.equals("/start")) {
+            dbHelper.changeState(chatId ,1);
         } else if (message.equals("امکانات")) {
             dbHelper.changeState(chatId, 2);
         } else if (message.equals("انصراف")) {
