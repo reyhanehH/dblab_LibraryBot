@@ -34,14 +34,17 @@ public class stateLike extends TelegramLongPollingBot
         int state = dbHelper.checkId(chatId);
         System.out.println("state before if : " + state);
 
-
-        if (message == "/start" | state == -1) {
+        if (state == -1)
+        {
+            System.out.println("add new chatid in DB");
             dbHelper.newState(chatId);
-            //dbHelper.changeState(chatId, 1);
-            state = 1;
-        }/*else if (message == "/start" && state != 1) {
+        }
+
+
+        if (message.equals("/start")) {
+            System.out.println("in if second .... state is :"+ state);
             dbHelper.changeState(chatId, 1);
-        }*/else if (message.equals("امکانات")) {
+        }else if (message.equals("امکانات")) {
             dbHelper.changeState(chatId, 2);
         } else if (message.equals("انصراف")) {
             dbHelper.changeState(chatId, 1);
@@ -141,8 +144,14 @@ public class stateLike extends TelegramLongPollingBot
                 button2.setText("مشاهده کتاب");
                 button2.setRequestContact(false);
                 button2.setRequestLocation(false);
-
                 row.add(button2);
+
+                KeyboardButton button3 = new KeyboardButton();
+                button3.setText("انصراف");
+                button3.setRequestContact(false);
+                button3.setRequestLocation(false);
+                row.add(button3);
+
                 keyboardRows.add(row);
 
                 ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
