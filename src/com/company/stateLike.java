@@ -14,24 +14,42 @@ import java.util.List;
 
 public class stateLike extends TelegramLongPollingBot
 {
+    DBHelper dbHelper;
+    public stateLike ()
+    {
+        dbHelper = new DBHelper();
+    }
     @Override
     public void onUpdateReceived(Update update) {
         String message = update.getMessage().getText();
         System.out.println("message is: " + message);
         Long chatId = update.getMessage().getChatId();
         //create new DBHelper
-        DBHelper dbHelper = new DBHelper();
 
         //check the input:
         int state = dbHelper.checkId(chatId);
 
 
-        if (state == -1)//create state for new user
-        {
+        if (message == "/start" | state == -1) {
             dbHelper.newState(chatId);
             state = 1;
+        } else if (message.equals("امکانات")) {
+            dbHelper.changeState(chatId, 2);
+        } else if (message.equals("انصراف")) {
+            dbHelper.changeState(chatId, 1);
+        } else if (message.equals("اضافه کردن کتاب"))
+        {
+            dbHelper.changeState(chatId, 3);
+        }else if (message.equals("مشاهده کتاب"))
+        {
+            dbHelper.changeState(chatId, 4);
+        }else if (message.equals("تائید"))
+        {
+            dbHelper.changeState(chatId, 5);
         }
 
+
+        state = dbHelper.checkId(chatId);
         System.out.println("in statelike class ... after check state! state:"+ state);
         replyMessage (state ,chatId ,message ,update);
     }
@@ -102,8 +120,98 @@ public class stateLike extends TelegramLongPollingBot
                 break;
             }
             case 2: //show emkanat
+            {
                 System.out.println("in state 2 . chatId : " + chatId);
+                SendMessage sendMessage = new SendMessage().setChatId(update.getMessage().getChatId());
+                sendMessage.setText("یکی از گزینه های زیر را انتخاب کنید.");
+                //button —------------------------
+                List<KeyboardRow> keyboardRows = new ArrayList<>();
+                //List<List<KeyboardRow» keyboardRows = new ArrayList<>());
+                KeyboardRow row = new KeyboardRow();
+
+                KeyboardButton button1 = new KeyboardButton();
+                button1.setText("اضافه کردن کتاب");
+                button1.setRequestContact(false);
+                button1.setRequestLocation(false);
+                row.add(button1);
+
+                KeyboardButton button2 = new KeyboardButton();
+                button2.setText("مشاهده کتاب");
+                button2.setRequestContact(false);
+                button2.setRequestLocation(false);
+
+                row.add(button2);
+                keyboardRows.add(row);
+
+                ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+                replyKeyboardMarkup.setKeyboard(keyboardRows);
+
+                sendMessage.setReplyMarkup(replyKeyboardMarkup);
+
+                //---------------------------------—
+                try {
+                    sendMessage(sendMessage);
+
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
                 break;
+            }
+
+        case 3: //add new book
+        {
+            SendMessage sendMessage = new SendMessage().setChatId(update.getMessage().getChatId());
+            if (message.equals("اضافه کردن کتاب")) {
+
+                sendMessage.setText(" لطفا مشخصات زیر را در یک پیام وارد کنید و بین هر مشخصه یک اینتر بزنید:" +
+                        " \n نام کتاب" +
+                        "\n نام نویسنده" +
+                        "\n نام ناشر" +
+                        "\n قیمت" +
+                        "یا کلید انصراف را برای خروج فشاردهید.");
+
+                //button
+
+                List<KeyboardRow> keyboardRows = new ArrayList<>();
+                //List<List<KeyboardRow» keyboardRows = new ArrayList<😠);
+                KeyboardRow row = new KeyboardRow();
+
+                KeyboardButton button2 = new KeyboardButton();
+                button2.setText("انصراف");
+                button2.setRequestContact(false);
+                button2.setRequestLocation(false);
+
+                row.add(button2);
+                keyboardRows.add(row);
+
+                ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+                replyKeyboardMarkup.setKeyboard(keyboardRows);
+
+                sendMessage.setReplyMarkup(replyKeyboardMarkup);
+
+            }
+            //------
+            else {
+                System.out.println("message : " + message);
+                String bookName ,writerName,publisherName ,price;
+                String[] aarayInfo = message.split("\n");
+                bookName = aarayInfo[0];
+                writerName = aarayInfo[1];
+                publisherName = aarayInfo[2];
+                price = aarayInfo[3];
+
+                dbHelper.addBook(bookName,writerName,publisherName, Integer.parseInt(price));
+                sendMessage.setText("کتاب شما با موفقیت ذخیره شد. :)");
+            }
+
+            try {
+                sendMessage(sendMessage);
+
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+        }
+
 
                 default: break; // if not found state
         }
