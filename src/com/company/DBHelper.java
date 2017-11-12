@@ -89,7 +89,7 @@ public class DBHelper
 
             Statement stmt=con.createStatement();
             //stmt.executeUpdate("INSERT INTO stateidtable VALUES ("+ chatID +" , \'1\' );");
-            stmt.executeUpdate("INSERT INTO book_test_table VALUES (\'" + bookName + "\', \'"+ writerName +"\' , "+price +",\'"+publisher +"\');");
+            stmt.executeUpdate("INSERT INTO book_test_table (book_name ,writer_name ,price , publisher) VALUES (\'" + bookName + "\', \'"+ writerName +"\' , "+price +",\'"+publisher +"\');");
 
             stmt.close();
             con.close();
