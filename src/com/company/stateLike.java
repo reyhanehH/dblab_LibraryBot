@@ -15,6 +15,7 @@ import java.util.List;
 public class stateLike extends TelegramLongPollingBot
 {
     public static String bookName, writerName, publisher ,price;
+    public int idViewBook ;
     DBHelper dbHelper;
     public stateLike ()
     {
@@ -48,7 +49,7 @@ public class stateLike extends TelegramLongPollingBot
             dbHelper.changeState(chatId, 3);
         }else if (message.equals("مشاهده کتاب"))
         {
-            //dbHelper.changeState(chatId, 4);
+            dbHelper.changeState(chatId, 8);
         }
 
         state = dbHelper.checkId(chatId);
@@ -140,7 +141,7 @@ public class stateLike extends TelegramLongPollingBot
                 row1.add(button1);
 
                 KeyboardButton button2 = new KeyboardButton();
-                button2.setText("مشاهده کتاب ها");
+                button2.setText("مشاهده کتاب");
                 button2.setRequestContact(false);
                 button2.setRequestLocation(false);
                 row1.add(button2);
@@ -329,6 +330,88 @@ public class stateLike extends TelegramLongPollingBot
                     e.printStackTrace();
                 }
             }
+
+            case 8: //view books
+            {
+                System.out.println("first of case 4");
+                SendMessage sendMessage = new SendMessage().setChatId(update.getMessage().getChatId());
+                if (message.equals("مشاهده کتاب")) {
+
+                    //button
+                    System.out.println( "before show buttons");
+                    List<KeyboardRow> keyboardRows = new ArrayList<>();
+                    //List<List<KeyboardRow» keyboardRows = new ArrayList<😠);
+                    KeyboardRow row = new KeyboardRow();
+
+                    KeyboardButton button1 = new KeyboardButton();
+                    button1.setText("بعدی");
+                    button1.setRequestContact(false);
+                    button1.setRequestLocation(false);
+                    row.add(button1);
+
+                    KeyboardButton button2 = new KeyboardButton();
+                    button2.setText("قبلی");
+                    button2.setRequestContact(false);
+                    button2.setRequestLocation(false);
+
+                    row.add(button2);
+                    keyboardRows.add(row);
+
+
+                    ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+                    replyKeyboardMarkup.setKeyboard(keyboardRows);
+
+                    sendMessage.setReplyMarkup(replyKeyboardMarkup);
+
+                    idViewBook =1;
+                    BookInfo bookInfo = dbHelper.getBook(idViewBook);
+                    //sendMessage.setText(bookInfo.getBookName() + "/n"+ bookInfo.getWriterName() +"/n"+ bookInfo.getPublisher() +"/n" + bookInfo.getPrice());
+                    System.out.println("in state 8 -- view book -- id :" +idViewBook);
+
+                    sendMessage.setText(
+
+                             "شماره کتاب:"+idViewBook+
+                                   "\n" +
+                            "نام کتاب: " + bookInfo.getBookName()+
+                            "\nنام نویسنده: " + bookInfo.getWriterName()+
+                            "\nناشر: " + bookInfo.getPublisher()+
+                            "\nقیمت: " + bookInfo.getPrice());
+
+                    System.out.println("message in replymethod : " + message);
+                    //idViewBook =1;
+                    //BookInfo bookInfo = dbHelper.getBook(idViewBook);
+                    //sendMessage.setText(bookInfo.getBookName() + "/n"+ bookInfo.getWriterName() +"/n"+ bookInfo.getPublisher() +"/n" + bookInfo.getPrice());
+                }
+
+                else if (message.equals("قبلی"))
+
+                {
+                    idViewBook--;
+                    BookInfo bookInfo = dbHelper.getBook(idViewBook);
+                   // sendMessage.setText(bookInfo.getBookName() + "\n"+ bookInfo.getWriterName() +"\n"+ bookInfo.getPublisher() +"\n" + bookInfo.getPrice());
+                    sendMessage.setText("شماره کتاب : "+ idViewBook +"\n"+ "نام کتاب: " +bookInfo.getBookName()+"\n" +"نام نویسنده: "+ bookInfo.getWriterName() +"\n"+ "نام ناشر: "+ bookInfo.getPublisher() +"\n" +"قیمت : "+ bookInfo.getPrice());
+                }
+                else if (message.equals("بعدی"))
+                {
+                    idViewBook = idViewBook +1;
+                    System.out.println("in badi state .id:" + idViewBook);
+
+                    BookInfo bookInfo = dbHelper.getBook( idViewBook);
+                    sendMessage.setText("شماره کتاب : "+ idViewBook +"\n"+ "نام کتاب: " +bookInfo.getBookName()+"\n" +"نام نویسنده: "+ bookInfo.getWriterName() +"\n"+ "نام ناشر: "+ bookInfo.getPublisher() +"\n" +"قیمت : "+ bookInfo.getPrice());
+                }
+
+
+
+
+                try {
+                    sendMessage(sendMessage);
+
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+                break;
+            }
+
 
             default: break; // if not found state
         }

@@ -109,8 +109,10 @@ public class DBHelper
             System.out.println(e);
         }
     }
-    public void viewBook (int id)
+    public BookInfo getBook ( int id)
     {
+        System.out.println("in getBook -- DBHelper");
+        BookInfo book= null;
         try{
             Class.forName("com.mysql.jdbc.Driver");
             Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/librarybotdb","root","123456");
@@ -118,14 +120,29 @@ public class DBHelper
 
             Statement stmt=con.createStatement();
             //stmt.executeUpdate("INSERT INTO stateidtable VALUES ("+ chatID +" , \'1\' );");
-            stmt.executeUpdate("select * from book_test_table where ( + id == " + id +  ");");
+            ResultSet resultSet = stmt.executeQuery("select * from book_test_table where id = " + id + ";");
+            if (resultSet.next()) {
 
+                System.out.println(resultSet.getString(2) + "/n" + resultSet.getString(3)
+                        + "/n" + resultSet.getString(5) + "/n" + resultSet.getInt(4));
+
+                book = new BookInfo(resultSet.getString(2), resultSet.getString(3)
+                        , resultSet.getString(5), resultSet.getInt(4));
+
+            }
+            else {
+                System.out.println("not found in get book ");
+            }
+
+            resultSet.close();
             stmt.close();
             con.close();
+            return book;
         }
         catch(Exception e)
         {
             System.out.println(e);
         }
+        return book;
     }
 }
