@@ -162,100 +162,100 @@ public class stateLike extends TelegramLongPollingBot
                 break;
             }
 
-        case 3: //add new book
-        {
-            SendMessage sendMessage = new SendMessage().setChatId(update.getMessage().getChatId());
-            if (message.equals("اضافه کردن کتاب")) {
-
-                sendMessage.setText(" لطفا مشخصات زیر را در یک پیام وارد کنید و بین هر مشخصه یک اینتر بزنید:" +
-                        " \n نام کتاب" +
-                        "\n نام نویسنده" +
-                        "\n نام ناشر" +
-                        "\n قیمت" +
-                        "یا کلید انصراف را برای خروج فشاردهید.");
-
-                //button
-
-                List<KeyboardRow> keyboardRows = new ArrayList<>();
-                //List<List<KeyboardRow» keyboardRows = new ArrayList<😠);
-                KeyboardRow row = new KeyboardRow();
-
-                // prev button
-                KeyboardButton button1 = new KeyboardButton();
-                button1.setText("بعدی");
-                button1.setRequestContact(false);
-                button1.setRequestLocation(false);
-
-                row.add(button1);
-                keyboardRows.add(row);
-
-                // next button
-                KeyboardButton button2 = new KeyboardButton();
-                button2.setText("بعدی");
-                button2.setRequestContact(false);
-                button2.setRequestLocation(false);
-
-                row.add(button2);
-                keyboardRows.add(row);
-
-                ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
-                replyKeyboardMarkup.setKeyboard(keyboardRows);
-
-                sendMessage.setReplyMarkup(replyKeyboardMarkup);
-
-            }
-            //------
-            else {
-                System.out.println("message : " + message);
-                String bookName ,writerName,publisherName ,price;
-                String[] aarayInfo = message.split("\n");
-                bookName = aarayInfo[0];
-                writerName = aarayInfo[1];
-                publisherName = aarayInfo[2];
-                price = aarayInfo[3];
-
-                dbHelper.addBook(bookName,writerName,publisherName, Integer.parseInt(price));
-                sendMessage.setText("کتاب شما با موفقیت ذخیره شد. :)");
-            }
-
-            try {
-                sendMessage(sendMessage);
-
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
-        }
-        case 4:
-            if (message.equals("مشاهده کتاب"))
+            case 3: //add new book
             {
                 SendMessage sendMessage = new SendMessage().setChatId(update.getMessage().getChatId());
-                sendMessage.setText(" مشخصات کتاب:" +
-                        " \n :نام کتاب" +
-                        "\n :نام نویسنده" +
-                        "\n :نام ناشر" +
-                        "\n :قیمت" +
-                        "");
+                if (message.equals("اضافه کردن کتاب")) {
 
-                // button -> view book
-                List<KeyboardRow> keyboardRows = new ArrayList<>();
-                //List<List<KeyboardRow» keyboardRows = new ArrayList<😠);
-                KeyboardRow row = new KeyboardRow();
+                    sendMessage.setText(" لطفا مشخصات زیر را در یک پیام وارد کنید و بین هر مشخصه یک اینتر بزنید:" +
+                            " \n نام کتاب" +
+                            "\n نام نویسنده" +
+                            "\n نام ناشر" +
+                            "\n قیمت" +
+                            "یا کلید انصراف را برای خروج فشاردهید.");
 
-                KeyboardButton button2 = new KeyboardButton();
-                button2.setText("انصراف");
-                button2.setRequestContact(false);
-                button2.setRequestLocation(false);
+                    //button
 
-                row.add(button2);
-                keyboardRows.add(row);
+                    List<KeyboardRow> keyboardRows = new ArrayList<>();
+                    //List<List<KeyboardRow» keyboardRows = new ArrayList<😠);
+                    KeyboardRow row = new KeyboardRow();
 
-                ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
-                replyKeyboardMarkup.setKeyboard(keyboardRows);
+                    // prev button
+                    KeyboardButton button1 = new KeyboardButton();
+                    button1.setText("بعدی");
+                    button1.setRequestContact(false);
+                    button1.setRequestLocation(false);
 
-                sendMessage.setReplyMarkup(replyKeyboardMarkup);
+                    row.add(button1);
+                    //keyboardRows.add(row);
 
+                    // next button
+                    KeyboardButton button2 = new KeyboardButton();
+                    button2.setText("قبلی");
+                    button2.setRequestContact(false);
+                    button2.setRequestLocation(false);
 
+                    row.add(button2);
+                    keyboardRows.add(row);
+
+                    ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+                    replyKeyboardMarkup.setKeyboard(keyboardRows);
+
+                    sendMessage.setReplyMarkup(replyKeyboardMarkup);
+
+                }
+                //------
+                else {
+                    System.out.println("message : " + message);
+                    String bookName ,writerName,publisherName ,price;
+                    String[] aarayInfo = message.split("\n");
+                    bookName = aarayInfo[0];
+                    writerName = aarayInfo[1];
+                    publisherName = aarayInfo[2];
+                    price = aarayInfo[3];
+
+                    dbHelper.addBook(bookName,writerName,publisherName, Integer.parseInt(price));
+                    sendMessage.setText("کتاب شما با موفقیت ذخیره شد. :)");
+                }
+
+                try {
+                    sendMessage(sendMessage);
+
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
             }
+            case 4:
+                if (message.equals("مشاهده کتاب"))
+                {
+                    SendMessage sendMessage = new SendMessage().setChatId(update.getMessage().getChatId());
+                    sendMessage.setText(" مشخصات کتاب:" +
+                            " \n :نام کتاب" +
+                            "\n :نام نویسنده" +
+                            "\n :نام ناشر" +
+                            "\n :قیمت" +
+                            "");
+
+                    // button -> view book
+                    List<KeyboardRow> keyboardRows = new ArrayList<>();
+                    //List<List<KeyboardRow» keyboardRows = new ArrayList<😠);
+                    KeyboardRow row = new KeyboardRow();
+
+                    KeyboardButton button2 = new KeyboardButton();
+                    button2.setText("انصراف");
+                    button2.setRequestContact(false);
+                    button2.setRequestLocation(false);
+
+                    row.add(button2);
+                    keyboardRows.add(row);
+
+                    ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+                    replyKeyboardMarkup.setKeyboard(keyboardRows);
+
+                    sendMessage.setReplyMarkup(replyKeyboardMarkup);
+
+
+                }
             default: break; // if not found state
         }
     }
