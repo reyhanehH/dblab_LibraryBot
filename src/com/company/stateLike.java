@@ -18,7 +18,8 @@ public class stateLike extends TelegramLongPollingBot
     DBHelper dbHelper;
     public stateLike ()
     {
-        dbHelper = new DBHelper();
+        //dbHelper = new DBHelper();
+        dbHelper = DBHelper.getDbHelper();
     }
     @Override
     public void onUpdateReceived(Update update) {
@@ -58,7 +59,7 @@ public class stateLike extends TelegramLongPollingBot
 
     void replyMessage(int state, Long chatId, String message ,Update update)
     {
-        DBHelper dbHelper = new DBHelper();
+        DBHelper dbHelper = DBHelper.getDbHelper();
 
 
 

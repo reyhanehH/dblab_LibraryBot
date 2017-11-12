@@ -1,5 +1,7 @@
 package com.company;
 
+import org.omg.CORBA.PUBLIC_MEMBER;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -7,9 +9,17 @@ import java.sql.Statement;
 
 public class DBHelper
 {
-    public DBHelper()
+    private static DBHelper dbHelper = null;
+    private DBHelper()
     {
 
+    }
+
+    public static synchronized DBHelper getDbHelper()
+    {
+        if (dbHelper == null)
+            dbHelper = new DBHelper();
+        return dbHelper;
     }
 
     public void changeState (long chatID , int newstate)
