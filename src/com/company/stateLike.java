@@ -1,6 +1,12 @@
 package com.company;
 
+import org.apache.commons.io.FileUtils;
+import org.omg.Messaging.SYNC_WITH_TRANSPORT;
+import org.telegram.telegrambots.api.methods.GetFile;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
+//import org.telegram.telegrambots.api.objects.File;
+import org.telegram.telegrambots.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.api.objects.PhotoSize;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardButton;
@@ -9,6 +15,17 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.*;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+
+import javax.imageio.ImageIO;
+import javax.imageio.stream.FileImageOutputStream;
+import javax.imageio.stream.ImageOutputStream;
+import java.awt.image.RenderedImage;
+import java.awt.image.renderable.RenderableImage;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,9 +39,29 @@ public class stateLike extends TelegramLongPollingBot
         //dbHelper = new DBHelper();
         dbHelper = DBHelper.getDbHelper();
     }
+
+    public void image (Update update) throws TelegramApiException, IOException
+    {
+        System.out.println("in image method ...");
+        PhotoSize photo1 = update.getMessage().getPhoto().get(0);
+        System.out.println("photo id: "+ photo1.getFileId());
+        System.out.println("photo file path" +photo1.getFilePath());
+        SendPhoto sendPhoto = new SendPhoto();
+        sendPhoto.setChatId(update.getMessage().getChatId());
+        sendPhoto.setPhoto(photo1.getFileId());
+
+        sendPhoto(sendPhoto);
+
+        //GetFile getFile = new GetFile();
+        //getFile.setFileId(photo1.getFileId());
+
+    }
+
+
     @Override
     public void onUpdateReceived(Update update) {
         String message = update.getMessage().getText();
+
         System.out.println("message is: " + message);
         Long chatId = update.getMessage().getChatId();
         //create new DBHelper
@@ -32,25 +69,27 @@ public class stateLike extends TelegramLongPollingBot
         //check the input:
         int state = dbHelper.checkId(chatId);
 
-        if (state == -1)
-        {
+        if (state == -1) {
             dbHelper.newState(chatId);
             state = 1;
         }
 
         if (message.equals("/start")) {
-            dbHelper.changeState(chatId ,1);
+            dbHelper.changeState(chatId, 1);
         } else if (message.equals("امکانات")) {
             dbHelper.changeState(chatId, 2);
         } else if (message.equals("انصراف")) {
             dbHelper.changeState(chatId, 1);
-        } else if (message.equals("معرفی کتاب"))
-        {
+        } else if (message.equals("معرفی کتاب")) {
             dbHelper.changeState(chatId, 3);
-        }else if (message.equals("مشاهده کتاب"))
-        {
+        } else if (message.equals("مشاهده کتاب")) {
             dbHelper.changeState(chatId, 8);
+        } else if (message.equals("بله")){
+            dbHelper.changeState(chatId, 9);
+        } else if (message.equals("خیر")){
+            dbHelper.changeState(chatId, 10);
         }
+
 
         state = dbHelper.checkId(chatId);
         System.out.println("in statelike class ... after check state! state:"+ state);
@@ -305,11 +344,16 @@ public class stateLike extends TelegramLongPollingBot
                 List<KeyboardRow> keyboardRows = new ArrayList<>();
                 KeyboardRow row = new KeyboardRow();
 
+                KeyboardButton button1 = new KeyboardButton();
+                button1.setText("بله");
+                button1.setRequestContact(false);
+                button1.setRequestLocation(false);
+                row.add(button1);
+
                 KeyboardButton button2 = new KeyboardButton();
-                button2.setText("انصراف");
+                button2.setText("خیر");
                 button2.setRequestContact(false);
                 button2.setRequestLocation(false);
-
                 row.add(button2);
                 keyboardRows.add(row);
 
@@ -317,18 +361,18 @@ public class stateLike extends TelegramLongPollingBot
                 replyKeyboardMarkup.setKeyboard(keyboardRows);
                 sendMessage.setReplyMarkup(replyKeyboardMarkup);
 
-
                 System.out.println(bookName + " --- "+ writerName + "---- "+ publisher + " ----- "+ price);
 
-                dbHelper.addBook(bookName, writerName, publisher, Integer.parseInt(price));
-                sendMessage.setText("کتاب شما با موفقیت ذخیره شد. :)");
+                //dbHelper.addBook(bookName, writerName, publisher, Integer.parseInt(price));
+                //sendMessage.setText("کتاب شما با موفقیت ذخیره شد. :)");
+                sendMessage.setText("آیا مایلید برای کتابی که معرفی کرده اید عکسی هم آپلود کنید؟");
 
                 try {
                     sendMessage(sendMessage);
-
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
                 }
+                break;
             }
 
             case 8: //view books
@@ -397,16 +441,57 @@ public class stateLike extends TelegramLongPollingBot
                     System.out.println("in badi state .id:" + idViewBook);
 
                     BookInfo bookInfo = dbHelper.getBook( idViewBook);
-                    sendMessage.setText("شماره کتاب : "+ idViewBook +"\n"+ "نام کتاب: " +bookInfo.getBookName()+"\n" +"نام نویسنده: "+ bookInfo.getWriterName() +"\n"+ "نام ناشر: "+ bookInfo.getPublisher() +"\n" +"قیمت : "+ bookInfo.getPrice());
+                    sendMessage.setText("شماره کتاب : "+ idViewBook +"\n"+ "نام کتاب: " +bookInfo.getBookName()+"\n" +"نام نویسنده: "+ bookInfo.getWriterName() +"\n"+
+                            "نام ناشر: "+ bookInfo.getPublisher() +"\n" +"قیمت : "+ bookInfo.getPrice());
                 }
-
-
-
 
                 try {
                     sendMessage(sendMessage);
-
                 } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+                break;
+            }
+            case 9:
+            {
+                SendMessage sendMessage = new SendMessage().setChatId(chatId);
+                if (message.equals("بله"))
+                {
+                    sendMessage.setText("لطفا عکس مورد نظر خود را آپلود نمایید...");
+                }
+
+                else {
+                    System.out.println("get image from user");
+                    PhotoSize photo;
+                    photo = update.getMessage().getPhoto().get(0);
+                    String photoID = photo.getFileId();
+
+                    dbHelper.addBook(bookName, writerName, publisher, Integer.parseInt(price), photoID);
+                    sendMessage.setText("کتاب شما با موفقیت ذخیره شد. :)");
+                }
+
+                try {
+                    sendMessage(sendMessage);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+
+                //dbHelper.changeState(update.getMessage().getChatId() , 10);
+                break;
+            }
+            case 10:
+            {
+                SendMessage sendMessage = new SendMessage().setChatId(chatId);
+                String photoID = "0" ;
+                System.out.println("user dont want to add image ... so photo id is 0");
+                dbHelper.addBook(bookName, writerName, publisher, Integer.parseInt(price) ,photoID);
+                sendMessage.setText("کتاب شما با موفقیت ذخیره شد. :)");
+                //while (update.getMessage().getPhoto().size() == 0) ;
+
+                try {
+                    sendMessage(sendMessage);
+                } catch (TelegramApiException e)
+                {
                     e.printStackTrace();
                 }
                 break;

@@ -90,7 +90,7 @@ public class DBHelper
         }
         return state;
     }
-    public void addBook (String bookName ,String writerName ,String publisher, Integer price)
+    public void addBook (String bookName ,String writerName ,String publisher, Integer price, String photoID)
     {
         try{
             Class.forName("com.mysql.jdbc.Driver");
@@ -99,7 +99,8 @@ public class DBHelper
 
             Statement stmt=con.createStatement();
             //stmt.executeUpdate("INSERT INTO stateidtable VALUES ("+ chatID +" , \'1\' );");
-            stmt.executeUpdate("INSERT INTO book_test_table (book_name ,writer_name ,price , publisher) VALUES (\'" + bookName + "\', \'"+ writerName +"\' , "+price +",\'"+publisher +"\');");
+            stmt.executeUpdate("INSERT INTO book_test_table (book_name ,writer_name ,price , publisher ,image_id) VALUES " +
+                    "(\'" + bookName + "\', \'"+ writerName +"\' , "+price +",\'"+publisher +"\' ,\'"+photoID+"\');");
 
             stmt.close();
             con.close();
@@ -124,10 +125,10 @@ public class DBHelper
             if (resultSet.next()) {
 
                 System.out.println(resultSet.getString(2) + "/n" + resultSet.getString(3)
-                        + "/n" + resultSet.getString(5) + "/n" + resultSet.getInt(4));
+                        + "/n" + resultSet.getString(5) + "/n" + resultSet.getInt(4)+"/n"+ resultSet.getString(6));
 
                 book = new BookInfo(resultSet.getString(2), resultSet.getString(3)
-                        , resultSet.getString(5), resultSet.getInt(4));
+                        , resultSet.getString(5), resultSet.getInt(4) ,resultSet.getString(6));
 
             }
             else {
