@@ -1,10 +1,7 @@
 package com.company;
 
-import org.apache.commons.io.FileUtils;
-import org.omg.Messaging.SYNC_WITH_TRANSPORT;
-import org.telegram.telegrambots.api.methods.GetFile;
+import com.company.services.Emoji;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
-//import org.telegram.telegrambots.api.objects.File;
 import org.telegram.telegrambots.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.api.objects.PhotoSize;
 import org.telegram.telegrambots.api.objects.Update;
@@ -12,22 +9,13 @@ import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.*;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-
-import javax.imageio.ImageIO;
-import javax.imageio.stream.FileImageOutputStream;
-import javax.imageio.stream.ImageOutputStream;
-import java.awt.image.RenderedImage;
-import java.awt.image.renderable.RenderableImage;
-import java.io.FileReader;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+//import org.telegram.telegrambots.api.objects.File;
 
 public class stateLike extends TelegramLongPollingBot
 {
@@ -75,10 +63,9 @@ public class stateLike extends TelegramLongPollingBot
         }
 
 
-        if(update.getMessage().getPhoto() != null){
-            dbHelper.changeState(chatId ,10);
-        }
-        else if (message.equals("/start")) {
+        if (update.getMessage().getPhoto() != null) {
+            dbHelper.changeState(chatId, 10);
+        } else if (message.equals("/start")) {
             dbHelper.changeState(chatId, 1);
         } else if (message.equals("امکانات") || message.equals("بازگشت به صفحه اصلی")) {
             dbHelper.changeState(chatId, 2);
@@ -88,10 +75,12 @@ public class stateLike extends TelegramLongPollingBot
             dbHelper.changeState(chatId, 3);
         } else if (message.equals("مشاهده همه کتابها")) {
             dbHelper.changeState(chatId, 8);
-        } else if (message.equals("بله")){
+        } else if (message.equals("بله")) {
             dbHelper.changeState(chatId, 9);
-        } else if (message.equals("خیر")){
+        } else if (message.equals("خیر")) {
             dbHelper.changeState(chatId, 11);
+        } else if (message.equals("سرچ کتاب")) {
+            dbHelper.changeState(chatId, 12);
         }
 
 
@@ -116,7 +105,7 @@ public class stateLike extends TelegramLongPollingBot
                 //welcome message
                 //SendMessage sendMessage = new SendMessage().setChatId(chatId);
                 SendMessage sendMessage = new SendMessage().setChatId(update.getMessage().getChatId());
-                sendMessage.setText("به بات کتابخانه خوش آمدید \n برای دیدن امکانات این بات کلید امکانات را فشار دهید.");
+                sendMessage.setText("به بات کتابخانه خوش آمدید \n برای دیدن امکانات این بات کلید امکانات را فشار دهید. " + Emoji.SMILING_FACE_WITH_OPEN_MOUTH);
                 System.out.println("before show button");
                 /*
                 List<KeyboardRow> keyboard = new ArrayList<>();
@@ -485,7 +474,8 @@ public class stateLike extends TelegramLongPollingBot
 
                 try {
                     sendMessage(sendMessage);
-                    sendPhoto(sendPhoto);
+                    if (hasImage)
+                        sendPhoto(sendPhoto);
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
                 }
@@ -553,8 +543,10 @@ public class stateLike extends TelegramLongPollingBot
                 System.out.println("image id : "+ photo.getFileId());
                 String photoID = photo.getFileId();
 
-                dbHelper.addBook(bookName, writerName, publisher, Integer.parseInt(price), photoID);
-                sendMessage.setText("کتاب شما با موفقیت ذخیره شد. :)");
+                //dbHelper.addBook(bookName, writerName, publisher, Integer.parseInt(price), photoID);
+                String result = dbHelper.insertBook_stored(bookName, writerName, publisher, Integer.parseInt(price), photoID);
+                sendMessage.setText(result);
+                //sendMessage.setText("کتاب شما با موفقیت ذخیره شد. :)");
 
                 try {
                     sendMessage(sendMessage);
@@ -588,9 +580,10 @@ public class stateLike extends TelegramLongPollingBot
 
                 String photoID = "0" ;
                 System.out.println("user dont want to add image ... so photo id is 0");
-                dbHelper.addBook(bookName, writerName, publisher, Integer.parseInt(price) ,photoID);
-                sendMessage.setText("کتاب شما با موفقیت ذخیره شد. :)");
-                //while (update.getMessage().getPhoto().size() == 0) ;
+                //dbHelper.addBook(bookName, writerName, publisher, Integer.parseInt(price) ,photoID);
+                //sendMessage.setText("کتاب شما با موفقیت ذخیره شد. :)");
+                String result = dbHelper.insertBook_stored(bookName, writerName, publisher, Integer.parseInt(price), photoID);
+                sendMessage.setText(result);
 
                 try {
                     sendMessage(sendMessage);
@@ -598,6 +591,234 @@ public class stateLike extends TelegramLongPollingBot
                 {
                     e.printStackTrace();
                 }
+                break;
+            }
+            case 12: {
+                System.out.println("in search book case");
+                SendMessage sendMessage = new SendMessage().setChatId(chatId);
+
+                if (message.equals("سرچ کتاب")) {
+                    List<KeyboardRow> keyboardRows = new ArrayList<>();
+                    KeyboardRow row1 = new KeyboardRow();
+
+                    KeyboardButton button1 = new KeyboardButton();
+                    button1.setText("نام کتاب");
+                    button1.setRequestLocation(false);
+                    button1.setRequestContact(false);
+
+                    KeyboardButton button2 = new KeyboardButton();
+                    button2.setText("نام نویسنده");
+                    button2.setRequestLocation(false);
+                    button2.setRequestContact(false);
+
+                    KeyboardButton button3 = new KeyboardButton();
+                    button3.setText("نام ناشر");
+                    button3.setRequestLocation(false);
+                    button3.setRequestContact(false);
+
+                    KeyboardButton button4 = new KeyboardButton();
+                    button4.setText("محدوده قیمت");
+                    button4.setRequestLocation(false);
+                    button4.setRequestContact(false);
+
+                    row1.add(button1);
+                    row1.add(button2);
+                    row1.add(button3);
+                    row1.add(button4);
+
+                    KeyboardRow row3 = new KeyboardRow();
+                    KeyboardButton button5 = new KeyboardButton();
+                    button5.setText("بازگشت به صفحه اصلی");
+                    button5.setRequestContact(false);
+                    button5.setRequestLocation(false);
+
+                    row3.add(button5);
+                    keyboardRows.add(row1);
+                    keyboardRows.add(row3);
+
+                    ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+                    replyKeyboardMarkup.setKeyboard(keyboardRows);
+
+                    sendMessage.setReplyMarkup(replyKeyboardMarkup);
+                    sendMessage.setText("مایلید براساس کدام یک از گزینه های زیر جستجو را انچام دهید: ");
+                } else if (message.equals("نام کتاب"))
+                {
+                    sendMessage.setText("لطفا نام کتاب مورد نظر خود را وارد کنید:");
+                    dbHelper.changeState(chatId , 13);
+                }else if (message.equals("نام نویسنده"))
+                {
+                    sendMessage.setText("لطفا نام نویسنده مورد نظر خود را وارد کنید:");
+                    dbHelper.changeState(chatId ,14);
+                }else if (message.equals("نام ناشر"))
+                {
+                    sendMessage.setText("لطفا نام ناشر مورد نظر خود را وارد کنید:");
+                    dbHelper.changeState(chatId ,15);
+                }else if (message.equals("محدوده قیمت"))
+                {
+                    sendMessage.setText("لطفا محدوده قیمت مورد نظر خود را انتخاب کنید:");
+                    List<KeyboardRow> keyboardRows = new ArrayList<>();
+                    KeyboardRow row1 = new KeyboardRow();
+
+                    KeyboardButton button1 = new KeyboardButton();
+                    button1.setText("از 0 تا 10000 تومان");
+                    button1.setRequestLocation(false);
+                    button1.setRequestContact(false);
+
+                    KeyboardButton button2 = new KeyboardButton();
+                    button2.setText("از 10000 تا 20000 تومان");
+                    button2.setRequestLocation(false);
+                    button2.setRequestContact(false);
+
+                    KeyboardButton button3 = new KeyboardButton();
+                    button3.setText("از 20000 تا 50000 تومان");
+                    button3.setRequestLocation(false);
+                    button3.setRequestContact(false);
+
+                    KeyboardButton button4 = new KeyboardButton();
+                    button4.setText("بیشتر از 50000 تومان");
+                    button4.setRequestLocation(false);
+                    button4.setRequestContact(false);
+
+                    row1.add(button1);
+                    row1.add(button2);
+                    row1.add(button3);
+                    row1.add(button4);
+
+                    KeyboardRow row3 = new KeyboardRow();
+                    KeyboardButton button5 = new KeyboardButton();
+                    button5.setText("بازگشت به صفحه اصلی");
+                    button5.setRequestContact(false);
+                    button5.setRequestLocation(false);
+
+                    row3.add(button5);
+                    keyboardRows.add(row1);
+                    keyboardRows.add(row3);
+
+                    ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+                    replyKeyboardMarkup.setKeyboard(keyboardRows);
+
+                    sendMessage.setReplyMarkup(replyKeyboardMarkup);
+
+                }
+                try {
+                    sendMessage(sendMessage);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+                break;
+            }
+            case 13: // search as book name
+            {
+                ArrayList<BookInfo> bookInfos = dbHelper.search_bookName(message);
+                SendMessage sendMessage = new SendMessage().setChatId(chatId);
+                //sendMessage.setText("نتایج به دست آمده:"+bookInfos.size());
+                boolean hasImage = false;
+                SendPhoto sendPhoto = new SendPhoto().setChatId(update.getMessage().getChatId());
+                if (!message.equals("بعدی") || !message.equals("قبلی")) {
+
+                    //button
+                    System.out.println( "before show buttons");
+                    List<KeyboardRow> keyboardRows = new ArrayList<>();
+                    //List<List<KeyboardRow» keyboardRows = new ArrayList<😠);
+                    KeyboardRow row = new KeyboardRow();
+
+                    KeyboardButton button1 = new KeyboardButton();
+                    button1.setText("بعدی");
+                    button1.setRequestContact(false);
+                    button1.setRequestLocation(false);
+                    row.add(button1);
+
+                    KeyboardButton button2 = new KeyboardButton();
+                    button2.setText("قبلی");
+                    button2.setRequestContact(false);
+                    button2.setRequestLocation(false);
+                    row.add(button2);
+
+                    KeyboardRow row2 = new KeyboardRow();
+                    KeyboardButton button3 = new KeyboardButton();
+                    button3.setText("بازگشت به صفحه اصلی");
+                    button3.setRequestContact(false);
+                    button3.setRequestLocation(false);
+                    row2.add(button3);
+
+                    keyboardRows.add(row);
+                    keyboardRows.add(row2);
+
+                    ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+                    replyKeyboardMarkup.setKeyboard(keyboardRows);
+
+                    sendMessage.setReplyMarkup(replyKeyboardMarkup);
+
+                    idViewBook =0;
+                    BookInfo bookInfo = bookInfos.get(idViewBook);
+                    //sendMessage.setText(bookInfo.getBookName() + "/n"+ bookInfo.getWriterName() +"/n"+ bookInfo.getPublisher() +"/n" + bookInfo.getPrice());
+                    System.out.println("in state 8 -- view book -- id :" +idViewBook);
+
+                    sendMessage.setText(
+
+                            "شماره کتاب:"+idViewBook+
+                                    "\n" +
+                                    "نام کتاب: " + bookInfo.getBookName()+
+                                    "\nنام نویسنده: " + bookInfo.getWriterName()+
+                                    "\nناشر: " + bookInfo.getPublisher()+
+                                    "\nقیمت: " + bookInfo.getPrice());
+                    if (!bookInfo.getImageID().equals("0"))
+                    {
+                        sendPhoto.setPhoto(bookInfo.getImageID());
+                        hasImage = true;
+                    }
+                    else {
+                        // need to save a photo for books dont have photo !!!!
+                    }
+
+                    System.out.println("message in replymethod : " + message);
+                    //idViewBook =1;
+                    //BookInfo bookInfo = dbHelper.getBook(idViewBook);
+                    //sendMessage.setText(bookInfo.getBookName() + "/n"+ bookInfo.getWriterName() +"/n"+ bookInfo.getPublisher() +"/n" + bookInfo.getPrice());
+                }
+
+                else if (message.equals("قبلی"))
+                {
+                    idViewBook--;
+                    BookInfo bookInfo = bookInfos.get(idViewBook);
+                    // sendMessage.setText(bookInfo.getBookName() + "\n"+ bookInfo.getWriterName() +"\n"+ bookInfo.getPublisher() +"\n" + bookInfo.getPrice());
+                    sendMessage.setText("شماره کتاب : "+ idViewBook +"\n"+ "نام کتاب: " +bookInfo.getBookName()+"\n" +"نام نویسنده: "+ bookInfo.getWriterName() +"\n"+ "نام ناشر: "+ bookInfo.getPublisher() +"\n" +"قیمت : "+ bookInfo.getPrice());
+                    if (!bookInfo.getImageID().equals("0"))
+                    {
+                        sendPhoto.setPhoto(bookInfo.getImageID());
+                        hasImage = true;
+                    }
+                    else {
+                        // need to save a photo for books dont have photo !!!!
+                    }
+                }
+                else if (message.equals("بعدی"))
+                {
+                    idViewBook = idViewBook +1;
+                    System.out.println("in badi state .id:" + idViewBook);
+
+                    BookInfo bookInfo = bookInfos.get(idViewBook);
+                    sendMessage.setText("شماره کتاب : "+ idViewBook +"\n"+ "نام کتاب: " +bookInfo.getBookName()+"\n" +"نام نویسنده: "+ bookInfo.getWriterName() +"\n"+
+                            "نام ناشر: "+ bookInfo.getPublisher() +"\n" +"قیمت : "+ bookInfo.getPrice());
+                    //send photo of book
+                    if (!bookInfo.getImageID().equals("0")) // has photo
+                    {
+                        sendPhoto.setPhoto(bookInfo.getImageID());
+                        hasImage = true;
+                    }
+                    else {
+                        // need to save a photo for books dont have photo !!!!
+                    }
+
+                }
+                try {
+                    sendMessage(sendMessage);
+                    if (hasImage)
+                        sendPhoto(sendPhoto);
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+
                 break;
             }
 

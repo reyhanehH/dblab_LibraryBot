@@ -1,11 +1,7 @@
 package com.company;
 
-import org.omg.CORBA.PUBLIC_MEMBER;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.ArrayList;
 
 public class DBHelper
 {
@@ -125,7 +121,8 @@ public class DBHelper
             if (resultSet.next()) {
 
                 System.out.println(resultSet.getString(2) + "/n" + resultSet.getString(3)
-                        + "/n" + resultSet.getString(5) + "/n" + resultSet.getInt(4)+"/n"+ resultSet.getString(6));
+                        + "/n" + resultSet.getString(5) + "/n" + resultSet.getInt(4)+"/n" +
+                        ""+ resultSet.getString(6));
 
                 book = new BookInfo(resultSet.getString(2), resultSet.getString(3)
                         , resultSet.getString(5), resultSet.getInt(4) ,resultSet.getString(6));
@@ -145,5 +142,62 @@ public class DBHelper
             System.out.println(e);
         }
         return book;
+    }
+
+    //stored procedure
+    public String insertBook_stored (String bookName ,String writerName ,String publisher, Integer price, String photoID)
+    {
+        String result = null;
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/librarybotdb", "root", "123456");
+
+            CallableStatement callableStatement = con.prepareCall("{call insertBook(?,?,?,?,?,?)}");
+            callableStatement.setString(1, bookName);
+
+            callableStatement.setString(2, writerName);
+            callableStatement.setInt(3, price);
+            callableStatement.setString(4, publisher);
+            callableStatement.setString(5, photoID);
+            callableStatement.registerOutParameter(6 , Types.VARCHAR);
+
+            callableStatement.execute();
+
+            result = callableStatement.getString(6);
+            System.out.println("result : "+ result);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+    public ArrayList<BookInfo> search_bookName (String bookName)
+    {
+        ArrayList<BookInfo> bookInfoList = new ArrayList<BookInfo>();
+        try{
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/librarybotdb","root","123456");
+            //here sonoo is database name, root is username and password
+
+            Statement stmt=con.createStatement();
+            //stmt.executeUpdate("INSERT INTO stateidtable VALUES ("+ chatID +" , \'1\' );");
+            ResultSet resultSet = stmt.executeQuery("select * from book_test_table where book_test_table.book_name =  \'"+ bookName+"\' ;");
+
+            while (resultSet.next())
+            {
+                BookInfo book = new BookInfo(resultSet.getString(2), resultSet.getString(3)
+                        , resultSet.getString(5), resultSet.getInt(4) ,resultSet.getString(6));
+                bookInfoList.add(book);
+            }
+
+            resultSet.close();
+            stmt.close();
+            con.close();
+        }
+        catch(Exception e)
+        {
+            System.out.println(e);
+        }
+        return bookInfoList;
     }
 }
