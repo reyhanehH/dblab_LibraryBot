@@ -1,11 +1,16 @@
 package com.company;
 
+
+
 import java.sql.*;
 import java.util.ArrayList;
 
 public class DBHelper
 {
     private static DBHelper dbHelper = null;
+
+
+  private   ArrayList <BookInfo> idview  = new ArrayList<>();
     private DBHelper()
     {
 
@@ -113,10 +118,8 @@ public class DBHelper
         try{
             Class.forName("com.mysql.jdbc.Driver");
             Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/librarybotdb","root","123456");
-            //here sonoo is database name, root is username and password
-
             Statement stmt=con.createStatement();
-            //stmt.executeUpdate("INSERT INTO stateidtable VALUES ("+ chatID +" , \'1\' );");
+
             ResultSet resultSet = stmt.executeQuery("select * from book_test_table where id = " + id + ";");
             if (resultSet.next()) {
 
@@ -153,6 +156,7 @@ public class DBHelper
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/librarybotdb", "root", "123456");
 
             CallableStatement callableStatement = con.prepareCall("{call insertBook(?,?,?,?,?,?)}");
+            //CallableStatement callableStatement = con.prepareCall("{call transaction(?,?,?,?,?,?)}");
             callableStatement.setString(1, bookName);
 
             callableStatement.setString(2, writerName);
@@ -200,4 +204,239 @@ public class DBHelper
         }
         return bookInfoList;
     }
+
+    public void add_userName (long chatID , String userName)
+    {
+        try{
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/librarybotdb","root","123456");
+            //here sonoo is database name, root is username and password
+
+            Statement stmt=con.createStatement();
+            //stmt.executeUpdate("INSERT INTO stateidtable VALUES ("+ chatID +" , \'1\' );");
+            stmt.executeUpdate("INSERT INTO usertable (chatid ,user_name ) VALUES " +
+                    "(\'" + chatID + "\', \'"+ userName +"\' );");
+
+            stmt.close();
+            con.close();
+        }
+        catch(Exception e)
+        {
+            System.out.println(e);
+        }
+    }
+
+
+    public Profile get_userName (long chatID)
+    {
+        System.out.println("get_userName -- DBHelper");
+        Profile  profile= null;
+        try{
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/librarybotdb","root","123456");
+            //here sonoo is database name, root is username and password
+
+            Statement stmt=con.createStatement();
+            //stmt.executeUpdate("INSERT INTO stateidtable VALUES ("+ chatID +" , \'1\' );");
+            ResultSet resultSet = stmt.executeQuery("select * from usertable where chatid = " + chatID + ";");
+
+            if (resultSet.next())
+            {
+                System.out.println(resultSet.getString(2));
+                profile = new Profile(resultSet.getString(2));
+              //  System.out.println("end)))))))))))))))))))))");
+            }
+
+            resultSet.close();
+            stmt.close();
+            con.close();
+            return profile;
+        }
+        catch(Exception e)
+        {
+            System.out.println(e);
+        }
+        return profile;
+    }
+
+    public  ArrayList<BookInfo>   get_book_like (long chatID)
+    {
+        BookInfo book= null;
+        //int i = 0 ;
+        try{
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/librarybotdb","root","123456");
+            //here sonoo is database name, root is username and password
+
+            Statement stmt=con.createStatement();
+            Statement stmt2=con.createStatement();
+            //stmt.executeUpdate("INSERT INTO stateidtable VALUES ("+ chatID +" , \'1\' );");
+
+           // ResultSet resultSet2 =  null;
+            ResultSet resultSet = stmt.executeQuery("select  *  from book_test_table inner join bookliketable  on bookliketable.bookid = book_test_table.id   where bookliketable.chatid =  " + chatID + ";");
+            while (resultSet.next()) {
+                    // idview[i] = resultSet.getInt(1) ;
+                    System.out.println("\n" + resultSet.getInt(1) + " \n " + resultSet.getString(2) + "\n" + resultSet.getString(3)
+                            + "\n" + resultSet.getString(5) + "\n" + resultSet.getInt(4) + "\n" +
+                            "" + resultSet.getString(6));
+
+                    book = new BookInfo(resultSet.getString(2), resultSet.getString(3)
+                            , resultSet.getString(5), resultSet.getInt(4), resultSet.getString(6));
+                    idview.add(book);
+
+            }
+            resultSet.close();
+            
+            stmt.close();
+            con.close();
+
+        }
+        catch(Exception e)
+        {
+            System.out.println(e+"\n" );
+            e.printStackTrace();
+        }
+
+       return  idview  ;
+    }
+    public  void addLikeBook (long chatID , int bookID)
+    {
+        try{
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/librarybotdb","root","123456");
+            //here sonoo is database name, root is username and password
+
+            Statement stmt=con.createStatement();
+            //stmt.executeUpdate("INSERT INTO stateidtable VALUES ("+ chatID +" , \'1\' );");
+
+            //ResultSet userid = stmt.executeQuery("select useid from usertable where chatid = " + chatID + ";");
+            stmt.executeUpdate("INSERT INTO bookliketable (  bookid  , chatid) VALUES " +
+                    "(\'" + bookID + "\', \'"+ chatID +"\' );");
+
+
+            stmt.close();
+            con.close();
+        }
+        catch(Exception e)
+        {
+            System.out.println(e);
+        }
+
+    }
+    public  boolean checkRegistering (long chatID)
+    {
+        boolean result = false;
+        String userName = null ;
+        try{
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/librarybotdb","root","123456");
+            Statement stmt=con.createStatement();
+
+            ResultSet resultSet = stmt.executeQuery("select  * from usertable   where chatid =  " + chatID + ";");
+            if (resultSet.next()) {
+                System.out.println("\n" + resultSet.getString(2));
+                userName = (resultSet.getString(2));
+            }
+                if (userName == null) {
+                    result = false;
+                } else {
+                    result = true;
+                }
+
+            resultSet.close();
+            stmt.close();
+            con.close();
+        }
+        catch(Exception e)
+        {
+            System.out.println(e+"\n" );
+            e.printStackTrace();
+        }
+
+
+        return  result ;
+    }
+    public  boolean checkLikeBook (long chatID , int idViewBook)
+    {
+        System.out.println("idViewBook = " + idViewBook);
+        boolean result = false;
+        int book_id = 0 ;
+        try{
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/librarybotdb","root","123456");
+            Statement stmt=con.createStatement();
+
+            ResultSet resultSet = stmt.executeQuery("select * from  bookliketable    where chatid =  " + chatID + " and bookid= " + idViewBook + ";");
+            while (resultSet.next()) {
+
+                System.out.println("\n" + resultSet.getInt(1));
+                book_id = (resultSet.getInt(1));
+                System.out.println("bookid = " + book_id);
+
+                if (book_id != 0) {
+                    result = true;
+                } else
+                {
+                    result = false;
+                }
+            }
+            resultSet.close();
+            stmt.close();
+            con.close();
+        }
+        catch(Exception e)
+        {
+            System.out.println(e+"\n" );
+            e.printStackTrace();
+        }
+        return  result ;
+    }
+
+    public int getCount_book_test_table ()
+    {
+         int countStar = 0 ;
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/librarybotdb", "root", "123456");
+            Statement stmt = con.createStatement();
+
+            ResultSet resultSet = stmt.executeQuery("select count(*) from book_test_table ");
+            if (resultSet.next()) {
+                countStar = resultSet.getInt(1);
+                System.out.println("countStar = " + countStar);
+            }
+            resultSet.close();
+            stmt.close();
+            con.close();
+        }
+        catch(Exception e)
+        {
+            System.out.println(e);
+        }
+        return  countStar ;
+    }
+    public int getCount_bookliketable (long chatID)
+    {
+        int countStar = 0 ;
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/librarybotdb", "root", "123456");
+            Statement stmt = con.createStatement();
+
+            ResultSet resultSet = stmt.executeQuery("select count(*) from bookliketable where chatid =" + chatID + ";");
+            if (resultSet.next()) {
+                countStar = resultSet.getInt(1);
+                System.out.println("countStar = " + countStar);
+            }
+            resultSet.close();
+            stmt.close();
+            con.close();
+        }
+        catch(Exception e)
+        {
+            System.out.println(e);
+        }
+        return  countStar ;
+    }
+
 }

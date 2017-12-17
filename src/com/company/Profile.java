@@ -2,17 +2,23 @@ package com.company;
 
 public class Profile
 {
-    //ddd username
-    //mark favaroite books
-    //if not register not allow to see profile
+    private String user_name ;
+    private long chatid ;
 
-    public Profile ()
+    public Profile ( String user_name )
     {
-        //check info
+
+        this.user_name = user_name ;
+
+    }
+    public  long getChatid ()
+    {
+        return chatid ;
     }
 
-    //see fav books
-    //add new fav book
-    //change username
+    public String get_user_name()
+    {
+        return  user_name;
+    }
 
 }
